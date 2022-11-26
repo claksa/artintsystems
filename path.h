@@ -10,9 +10,8 @@ protected:
     graph g;
     int vertices;
 
-
 public:
-    explicit path(graph gr);
+    explicit path(const graph& gr);
 
 };
 
@@ -43,5 +42,17 @@ private:
 public:
     explicit bs(const graph &gr);
     void search();
+};
+
+class dls: public path {
+private:
+    int depth_limit = 5;
+    int *prev;
+    int depth = 0;
+    void search(int, int);
+    void print_dls(int);
+public:
+    explicit dls(const graph &gr);
+    void init_search();
 };
 #endif //LAB2_PATH_H

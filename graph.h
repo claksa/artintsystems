@@ -9,7 +9,7 @@ using namespace std;
 
 class graph {
 
-    int nv = 27;
+    int nv;
     int s = 22;
     int t = 5;
     vector<vector<int>> adjacency_list;
@@ -20,14 +20,12 @@ class graph {
 public:
 
     explicit graph(vector<string> str_vertices_list);
-
     void fillAdjacencyList(vector<vector<string>> edges);
     void print_adj_list();
 
     int getNv() const;
     int getT() const;
     int getS() const;
-
     const vector<vector<int>> &getAdjacencyList() const;
 };
 

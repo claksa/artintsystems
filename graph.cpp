@@ -6,6 +6,7 @@
 
 
 graph::graph(vector<string> str_vertices_list) {
+    nv = 27;
     this->str_vertices_list=std::move(str_vertices_list);
     adjacency_list.resize(nv);
 }
@@ -62,4 +63,7 @@ int graph::getT() const {
 const vector<vector<int>> &graph::getAdjacencyList() const {
     return adjacency_list;
 }
+
+
+
 

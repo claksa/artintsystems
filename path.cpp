@@ -2,15 +2,15 @@
 #include "path.h"
 
 
-path::path(graph gr) : g(g) {
-    this->g = gr;
-    vertices = gr.getNv();
+path::path(const graph& gr) : g(gr), vertices(gr.getNv()){
     visited = new bool[vertices];
 }
 
 bfs::bfs(const graph &gr) : path(gr) {}
 bs::bs(const graph &gr) : path(gr) {}
-
+dls::dls(const graph &gr) : path(gr) {
+    prev = new int[vertices];
+}
 dfs::dfs(const graph &gr) : path(gr) {
     prev = new int[vertices];
 }
@@ -165,3 +165,42 @@ void bs::BFS(queue<int> &v_queue, bool *visited, int *parent) {
         }
     }
 }
+
+void dls::search(int node, int t) {
+    depth++;
+    if (depth > depth_limit) return;
+    visited[node] = true;
+    vector<vector<int>> adj_list = g.getAdjacencyList();
+    vector<int> adj_v = adj_list[node];
+    for (int &v: adj_v) {
+        if (!visited[v]) {
+            prev[v] = node;
+            search(v, t);
+        }
+    }
+    depth--;
+}
+
+void dls::print_dls(int t) {
+    vector<int> vertices;
+    int vertex = t;
+    while (vertex!=-1) {
+        vertices.push_back(vertex);
+        vertex = prev[vertex];
+    }
+    std::reverse(vertices.begin(), vertices.end());
+    for (int v: vertices) {
+        cout << v << ' ';
+    }
+    cout << endl;
+    cout << "dist = " << vertices.size() - 1 << endl;
+}
+
+void dls::init_search() {
+    int s = g.getS();
+    int t = g.getT();
+    prev[s] = -1;
+    search(s, t);
+    print_dls(t);
+}
+
