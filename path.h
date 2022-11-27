@@ -45,14 +45,26 @@ public:
 };
 
 class dls: public path {
-private:
     int depth_limit = 5;
     int *prev;
     int depth = 0;
-    void search(int, int);
-    void print_dls(int);
 public:
     explicit dls(const graph &gr);
     void init_search();
+private:
+    void search(int, int);
+    void print_dls(int);
+};
+
+class ids: public path {
+    int depth_limit = 5;
+    int *prev;
+public:
+    explicit ids(const graph &gr);
+    void init_search();
+private:
+    bool search(int, int);
+    bool dls(int, int, int);
+    void print_ids(int);
 };
 #endif //LAB2_PATH_H

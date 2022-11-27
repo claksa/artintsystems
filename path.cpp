@@ -66,6 +66,7 @@ void dfs::print_dfs(int t) {
     }
     cout << endl;
     cout << "dist = " << vertices.size() - 1 << endl;
+    cout << "shortest depth = " << shortest_depth << endl;
 }
 
 void dfs::search(int node, int t) {
@@ -174,6 +175,7 @@ void dls::search(int node, int t) {
     vector<int> adj_v = adj_list[node];
     for (int &v: adj_v) {
         if (!visited[v]) {
+            depth++;
             prev[v] = node;
             search(v, t);
         }
@@ -204,3 +206,52 @@ void dls::init_search() {
     print_dls(t);
 }
 
+ids::ids(const graph &gr) : path(gr) {
+    prev = new int[vertices];
+}
+
+bool ids::search(int s, int t) {
+    for (int i = 0; i <= depth_limit; i++) {
+        if (dls(s,t,i)) return  true;
+    }
+    return false;
+}
+
+bool ids::dls(int s, int t, int d) {
+    if (s==t) return true;
+    if (d <= 0) return false;
+    vector<vector<int>> adj_l = g.getAdjacencyList();
+    vector<int> adj_v = adj_l[s];
+    for (int &v: adj_v) {
+        if (dls(v,t,d-1)) {
+            prev[v] = s;
+            return true;
+        }
+    }
+    return false;
+}
+
+void ids::print_ids(int t) {
+    vector<int> vertices;
+    int vertex = t;
+    while (vertex!=-1) {
+        vertices.push_back(vertex);
+        vertex = prev[vertex];
+    }
+    std::reverse(vertices.begin(), vertices.end());
+    for (int v: vertices) {
+        cout << v << ' ';
+    }
+    cout << endl;
+    cout << "dist = " << vertices.size() - 1 << endl;
+}
+
+void ids::init_search() {
+    int s = g.getS();
+    int t = g.getT();
+    prev[s] = -1;
+    if (search(s,t)) {
+        cout << "A path with a given depth was found" << endl;
+        print_ids(t);
+    } else cout << "A path with a given depth wasn't found" << endl;
+}
