@@ -67,4 +67,11 @@ private:
     bool dls(int, int, int);
     void print_ids(int);
 };
+
+class inf_bfs: public path {
+public:
+    explicit inf_bfs(const graph &gr);
+    void search();
+};
+
 #endif //LAB2_PATH_H

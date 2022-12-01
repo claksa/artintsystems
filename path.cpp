@@ -255,3 +255,32 @@ void ids::init_search() {
         print_ids(t);
     } else cout << "A path with a given depth wasn't found" << endl;
 }
+
+inf_bfs::inf_bfs(const graph &gr) : path(gr) {}
+
+void inf_bfs::search() {
+    int t = g.getT();
+    int s = g.getS();
+    int dist = 0;
+    priority_queue<vw, vector<vw>, greater<>> pq;
+    pq.push(make_pair(0,s));
+    visited[s] = true;
+    while(!pq.empty()) {
+        int node = pq.top().second;
+        cout << node << ' ';
+//        cout << node << ", ";
+//        cout << "weight: " << pq.top().first << endl;
+        pq.pop();
+        dist += pq.top().first;
+        if (node == t) break;
+        vector<vector<vw>> adj_wl = g.getAdjWeightList();
+        vector<vw> adj_nodes = adj_wl[node];
+        for (auto i: adj_nodes) {
+            if (!visited[i.second]) {
+                visited[i.second] = true;
+                pq.push(make_pair(i.first,i.second));
+            }
+        }
+    }
+    cout << "distance: " << dist << endl;
+}
