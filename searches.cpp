@@ -10,6 +10,8 @@
 
 using namespace std;
 
+typedef pair<int, int> pair_entry;
+
 const int NV = 27;
 const int start_node = 22;
 const int target_node = 5;
@@ -21,6 +23,17 @@ struct graph {
     vector<int> ids_prev;
 };
 
+
+//struct inf_path {
+//    vector<int> distances;
+//    int length;
+//};
+
+struct weight_graph {
+    bool is_bfs_heuristic = false;
+    vector<int> distances;
+    vector<vector<pair_entry>> adj_weight_list;
+};
 
 void fill_adjacency_list(struct graph* gr) {
     map<string, int> vg = { {vertices[0], 0} };
@@ -286,6 +299,70 @@ void start_ids (struct graph* gr) {
         cout << "A path with a given depth was found" << endl;
         print_ids(gr);
     } else cout << "A path with a given depth wasn't found" << endl;
+}
+
+void fill_weight_graph(struct weight_graph* wg_ref) {
+    map<string, int> vg = { {vertices[0], 0} };
+    for (int i = 1; i < vertices.size(); i++) {
+        if (!vg.contains(vertices[i])) vg[vertices[i]] = vg.size();
+    }
+    wg_ref->distances.resize(NV);
+    wg_ref->adj_weight_list.resize(NV);
+    for (auto & edge: edges_weights_list) {
+        int begin = vg[edge[0]];
+        int end = vg[edge[1]];
+        int weight = stoi(edge[2]);
+        if (wg_ref->is_bfs_heuristic) {
+            wg_ref->adj_weight_list[begin].emplace_back(weight, end);
+            wg_ref->adj_weight_list[end].emplace_back(weight, begin);
+        } else {
+            int h1 = wg_ref->distances[end];
+            int h2 = wg_ref->distances[begin];
+            wg_ref->adj_weight_list[begin].emplace_back(weight+h1, end);
+            wg_ref->adj_weight_list[end].emplace_back(weight+h2,begin);
+        }
+    }
+}
+
+void find_path(struct weight_graph* wg_ref) {
+    if (wg_ref->is_bfs_heuristic) cout << "---Greedy BFS---" << endl;
+    else cout << "---A*---" << endl;
+    bool visited_nodes[NV];
+    priority_queue<pair_entry , vector<pair_entry>, greater<>> pq;
+    pq.emplace(0,start_node);
+    visited_nodes[start_node] = true;
+    int dist = 0;
+    while(!pq.empty()) {
+        int node = pq.top().second;
+        cout << node << ' ';
+        pq.pop();
+        dist += pq.top().first;
+        wg_ref->distances[node] = dist;
+//        cout << "node, " << node;
+//        cout << " w " << distances[node];
+//        cout << endl;
+        if (node == target_node) break;
+        vector<pair_entry> edge = wg_ref->adj_weight_list[node];
+        for (auto vw: edge) {
+            if (!visited_nodes[vw.second]) {
+                visited_nodes[vw.second] = true;
+                pq.emplace(vw.first, vw.second);
+            }
+        }
+    }
+    cout << endl;
+    cout << "distance: " << wg_ref->distances[target_node] << endl;
+}
+
+void start_inf_searches() {
+    weight_graph dijkstra;
+    dijkstra.is_bfs_heuristic = true;
+    fill_weight_graph(&dijkstra);
+    find_path(&dijkstra);
+
+    weight_graph astar;
+    fill_weight_graph(&astar);
+    find_path(&astar);
 }
 
 void start_base_searches() {
