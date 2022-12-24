@@ -3,4 +3,4 @@ project(lab2)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(lab2 main.cpp graph.cpp graph.h vertices.h path.cpp path.h)
+add_executable(lab2 main.cpp vertices.h searches.cpp searches.h)
