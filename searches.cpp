@@ -18,6 +18,7 @@ const int target_node = 5;
 
 struct graph {
     vector<vector<int>> adjacency_list;
+    map<int, string> cities = {{0, vertices[0]}};
     vector<int> dfs_prev;
     vector<int> dls_prev;
     vector<int> ids_prev;
@@ -33,13 +34,25 @@ struct weight_graph {
     bool is_bfs_heuristic = false;
     vector<int> distances;
     vector<vector<pair_entry>> adj_weight_list;
+    map<int, string> nodes = {{0, vertices[0]}};
 };
+
+void print_map(map<string, int> &m) {
+    for (auto [key, value] : m) {
+        cout << '[' << key << "] = " << value << "; ";
+        cout << endl;
+    }
+}
 
 void fill_adjacency_list(struct graph* gr) {
     map<string, int> vg = { {vertices[0], 0} };
     for (int i = 1; i < vertices.size(); i++) {
         if (!vg.contains(vertices[i])) vg[vertices[i]] = vg.size();
     }
+    for (auto [key, value]: vg) {
+        gr->cities[value] = key;
+    }
+//    print_map(vg);
     gr->adjacency_list.resize(NV);
     for (auto & edge : graph_list) {
         int begin = vg[edge[0]];
@@ -59,6 +72,7 @@ void print_adjacency_list(struct graph* gr) {
     }
 }
 
+
 void bfs(struct graph* gr) {
     cout << "---BFS---" << endl;
     int node = start_node;
@@ -75,7 +89,7 @@ void bfs(struct graph* gr) {
         node = q.front();
         if (node == target_node) {
             cout << "target node ";
-            cout << node << ", dist = " << dist[node];
+            cout << gr->cities.find(node)->second << ", dist = " << dist[node];
             cout << endl;
             break;
         }
@@ -124,7 +138,7 @@ void print_dfs(struct graph* gr) {
     }
     std::reverse(verts.begin(), verts.end());
     for (int v: verts) {
-        cout << v << ' ';
+        cout << gr->cities.find(v)->second << ' ';
     }
     cout << endl;
     cout << "dist = " << verts.size() - 1 << endl;
@@ -159,7 +173,7 @@ void BFS(queue<int> &v_queue, bool *visited, int *parent, struct graph *gr) {
     }
 }
 
-void print_BS(const int *s_parent, const int *t_parent, int i_node) {
+void print_BS(const int *s_parent, const int *t_parent, int i_node, struct graph* g) {
     cout << "---BS---" << endl;
     vector<int> path;
     vector<int> dist;
@@ -179,7 +193,7 @@ void print_BS(const int *s_parent, const int *t_parent, int i_node) {
         i = v;
     }
     for (int v: path) {
-        cout << v << ' ';
+        cout << g->cities.find(v)->second << ' ';
     }
     cout << endl;
     cout << "dist = " << path.size() - 1 << endl;
@@ -209,7 +223,7 @@ void BS(struct graph* gr) {
     int i_node = get_intersection(s_used, t_used);
     if (i_node != -1) {
 //        cout << "i_node: " << i_node;
-        print_BS(s_parent, t_parent, i_node);
+        print_BS(s_parent, t_parent, i_node, gr);
     }
 }
 
@@ -232,17 +246,17 @@ void dls(int node, int t, struct graph* gr) {
     dls_depth--;
 }
 
-void print_dls(vector<int> &prev) {
+void print_dls(struct graph* g) {
     cout << "---DLS---" << endl;
     vector<int> dls_vertices;
     int vertex = target_node;
     while (vertex!=-1) {
         dls_vertices.push_back(vertex);
-        vertex = prev[vertex];
+        vertex = g->dls_prev[vertex];
     }
     std::reverse(dls_vertices.begin(), dls_vertices.end());
     for (int v: dls_vertices) {
-        cout << v << ' ';
+        cout << g->cities.find(v)->second << ' ';
     }
     cout << endl;
     cout << "dist = " << dls_vertices.size() - 1 << endl;
@@ -252,7 +266,7 @@ void start_dls(struct graph* gr) {
     gr->dls_prev.resize(NV);
     gr->dls_prev[start_node] = -1;
     dls(start_node, target_node, gr);
-    print_dls(gr->dls_prev);
+    print_dls(gr);
 }
 
 bool ids_dls(int s, int t, int d, struct graph* gr) {
@@ -286,7 +300,7 @@ void print_ids(struct graph* gr) {
     }
     std::reverse(ids_v.begin(), ids_v.end());
     for (int v: ids_v) {
-        cout << v << ' ';
+        cout << gr->cities.find(v)->second << ' ';
     }
     cout << endl;
     cout << "dist = " << ids_v.size() - 1 << endl;
@@ -305,6 +319,9 @@ void fill_weight_graph(struct weight_graph* wg_ref) {
     map<string, int> vg = { {vertices[0], 0} };
     for (int i = 1; i < vertices.size(); i++) {
         if (!vg.contains(vertices[i])) vg[vertices[i]] = vg.size();
+    }
+    for (auto [key, value]: vg) {
+        wg_ref->nodes[value] = key;
     }
     wg_ref->distances.resize(NV);
     wg_ref->adj_weight_list.resize(NV);
@@ -334,7 +351,7 @@ void find_path(struct weight_graph* wg_ref) {
     int dist = 0;
     while(!pq.empty()) {
         int node = pq.top().second;
-        cout << node << ' ';
+        cout << wg_ref->nodes.find(node)->second << ' ';
         pq.pop();
         dist += pq.top().first;
         wg_ref->distances[node] = dist;
