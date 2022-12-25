@@ -1,11 +1,9 @@
-//
-// Created by polina on 24.12.22.
-//
-
 #include <vector>
 #include <map>
 #include <queue>
 #include <iostream>
+#include <limits>
+
 #include "vertices.h"
 
 using namespace std;
@@ -77,33 +75,36 @@ void bfs(struct graph* gr) {
     cout << "---BFS---" << endl;
     int node = start_node;
     queue<int> q;
-    vector<bool> used;
-    vector<int> dist;
-    used.resize(NV, false);
-    dist.resize(NV, 0);
+    vector<bool> used(NV, false);
+    vector<int> dist(NV);
+    vector<int> prev(NV);
 
     used[node] = true;
+    prev[node] = -1;
+    dist[node] = 0;
     q.push(node);
 
     while (!q.empty()) {
         node = q.front();
-        if (node == target_node) {
-            cout << "target node ";
-            cout << gr->cities.find(node)->second << ", dist = " << dist[node];
-            cout << endl;
-            break;
-        }
+//        if (node == target_node) {
+//            cout << "target node ";
+//            cout << gr->cities.find(node)->second << ", dist = " << dist[node];
+//            cout << endl;
+//            break;
+//        }
         q.pop();
 
         for (int& v: gr->adjacency_list[node]) {
             if (!used[v]) {
                 used[v] = true;
                 dist[v] = dist[node] + 1;
+                prev[v] = node;
                 q.push(v);
             }
         }
     }
 }
+
 
 int depth = 0;
 int shortest_depth = INT32_MAX;
@@ -323,7 +324,6 @@ void fill_weight_graph(struct weight_graph* wg_ref) {
     for (auto [key, value]: vg) {
         wg_ref->nodes[value] = key;
     }
-    wg_ref->distances.resize(NV);
     wg_ref->adj_weight_list.resize(NV);
     for (auto & edge: edges_weights_list) {
         int begin = vg[edge[0]];
@@ -341,10 +341,51 @@ void fill_weight_graph(struct weight_graph* wg_ref) {
     }
 }
 
+void greedy_bfs(struct weight_graph* wg_ref) {
+    cout << "---Greedy BFS---" << endl;
+    int INF = numeric_limits<int>::max();
+    vector<int> distances(NV, INF);
+    vector<int> prev(NV);
+    priority_queue<pair_entry , vector<pair_entry>, greater<>> pq;
+
+    distances[start_node] = 0;
+    prev[start_node] = -1;
+    pq.emplace(0,start_node);
+    while(!pq.empty()) {
+        pair_entry wv = pq.top();
+        int node = wv.second, cur_weight = wv.first;
+//        cout << wg_ref->nodes.find(node)->second << endl;
+        pq.pop();
+        if (node == target_node) break;
+        if (cur_weight > distances[node]) continue;
+        vector<pair_entry> adj_vertices = wg_ref->adj_weight_list[node];
+        for (auto vw: adj_vertices) {
+            if (distances[vw.second] > distances[node] + vw.first) {
+                prev[vw.second] = node;
+                distances[vw.second] = distances[node] + vw.first;
+                pq.emplace(vw.first, vw.second);
+            }
+        }
+    }
+    cout << "distance: " << distances[target_node] << endl;
+
+    vector<int> path;
+    int point = target_node;
+    while(prev[point] != -1) {
+        path.push_back(point);
+        point = prev[point];
+    }
+    reverse(path.begin(), path.end());
+    cout << "path: ";
+    for (auto v: path) {
+        cout << wg_ref->nodes.find(v)->second << '-';
+    }
+}
+
 void find_path(struct weight_graph* wg_ref) {
-    if (wg_ref->is_bfs_heuristic) cout << "---Greedy BFS---" << endl;
-    else cout << "---A*---" << endl;
+    cout << "---A*---" << endl;
     bool visited_nodes[NV];
+    bool path[NV];
     priority_queue<pair_entry , vector<pair_entry>, greater<>> pq;
     pq.emplace(0,start_node);
     visited_nodes[start_node] = true;
@@ -353,8 +394,8 @@ void find_path(struct weight_graph* wg_ref) {
         int node = pq.top().second;
         cout << wg_ref->nodes.find(node)->second << ' ';
         pq.pop();
-        dist += pq.top().first;
-        wg_ref->distances[node] = dist;
+//        int weight = pq.top().first - wg_ref->distances[node];
+//        cout << weight << ' ';
 //        cout << "node, " << node;
 //        cout << " w " << distances[node];
 //        cout << endl;
@@ -368,18 +409,21 @@ void find_path(struct weight_graph* wg_ref) {
         }
     }
     cout << endl;
-    cout << "distance: " << wg_ref->distances[target_node] << endl;
+    cout << "distance: " << path[target_node] << endl;
+
 }
 
 void start_inf_searches() {
     weight_graph dijkstra;
+    weight_graph astar;
+    dijkstra.distances.resize(NV);
+    astar.distances.resize(NV);
     dijkstra.is_bfs_heuristic = true;
     fill_weight_graph(&dijkstra);
-    find_path(&dijkstra);
+    greedy_bfs(&dijkstra);
 
-    weight_graph astar;
-    fill_weight_graph(&astar);
-    find_path(&astar);
+//    fill_weight_graph(&astar);
+//    find_path(&astar);
 }
 
 void start_base_searches() {
