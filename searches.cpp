@@ -8,11 +8,15 @@
 
 using namespace std;
 
+//TODO: refactor and fix params
+
 typedef pair<int, int> pair_entry;
 
 const int NV = 27;
 const int start_node = 22;
 const int target_node = 5;
+const int INF = numeric_limits<int>::max();
+
 
 struct graph {
     vector<vector<int>> adjacency_list;
@@ -316,7 +320,12 @@ void start_ids (struct graph* gr) {
     } else cout << "A path with a given depth wasn't found" << endl;
 }
 
-void fill_weight_graph(struct weight_graph* wg_ref) {
+struct estimate {
+    vector<int> weights;
+    vector<int> distances;
+};
+
+void fill_weight_graph(struct weight_graph* wg_ref, struct estimate* est) {
     map<string, int> vg = { {vertices[0], 0} };
     for (int i = 1; i < vertices.size(); i++) {
         if (!vg.contains(vertices[i])) vg[vertices[i]] = vg.size();
@@ -333,28 +342,28 @@ void fill_weight_graph(struct weight_graph* wg_ref) {
             wg_ref->adj_weight_list[begin].emplace_back(weight, end);
             wg_ref->adj_weight_list[end].emplace_back(weight, begin);
         } else {
-            int h1 = wg_ref->distances[end];
-            int h2 = wg_ref->distances[begin];
+            int h1 = est->distances[end];
+            int h2 = est->distances[begin];
             wg_ref->adj_weight_list[begin].emplace_back(weight+h1, end);
             wg_ref->adj_weight_list[end].emplace_back(weight+h2,begin);
         }
     }
 }
 
-void greedy_bfs(struct weight_graph* wg_ref) {
+void greedy_bfs(struct weight_graph* wg_ref, struct estimate* est) {
     cout << "---Greedy BFS---" << endl;
-    int INF = numeric_limits<int>::max();
     vector<int> distances(NV, INF);
     vector<int> prev(NV);
     priority_queue<pair_entry , vector<pair_entry>, greater<>> pq;
 
     distances[start_node] = 0;
+    est->distances[start_node] = 0;
+
     prev[start_node] = -1;
     pq.emplace(0,start_node);
     while(!pq.empty()) {
         pair_entry wv = pq.top();
         int node = wv.second, cur_weight = wv.first;
-//        cout << wg_ref->nodes.find(node)->second << endl;
         pq.pop();
         if (node == target_node) break;
         if (cur_weight > distances[node]) continue;
@@ -363,6 +372,7 @@ void greedy_bfs(struct weight_graph* wg_ref) {
             if (distances[vw.second] > distances[node] + vw.first) {
                 prev[vw.second] = node;
                 distances[vw.second] = distances[node] + vw.first;
+                est->distances[vw.second] = distances[vw.second];
                 pq.emplace(vw.first, vw.second);
             }
         }
@@ -380,50 +390,63 @@ void greedy_bfs(struct weight_graph* wg_ref) {
     for (auto v: path) {
         cout << wg_ref->nodes.find(v)->second << '-';
     }
+    cout << endl;
 }
 
-void find_path(struct weight_graph* wg_ref) {
-    cout << "---A*---" << endl;
-    bool visited_nodes[NV];
-    bool path[NV];
+void A_star(struct weight_graph* wg_ref, struct estimate* est) {
+    vector<int> heuristics(NV, INF);
+    vector<int> distances(NV, INF);
+    vector<int> prev(NV);
     priority_queue<pair_entry , vector<pair_entry>, greater<>> pq;
+
+    heuristics[start_node] = 0;
+    distances[start_node] = 0;
+    prev[start_node] = -1;
     pq.emplace(0,start_node);
-    visited_nodes[start_node] = true;
-    int dist = 0;
     while(!pq.empty()) {
-        int node = pq.top().second;
-        cout << wg_ref->nodes.find(node)->second << ' ';
+        pair_entry wv = pq.top();
+        int node = wv.second, cur_heur = wv.first;
         pq.pop();
-//        int weight = pq.top().first - wg_ref->distances[node];
-//        cout << weight << ' ';
-//        cout << "node, " << node;
-//        cout << " w " << distances[node];
-//        cout << endl;
         if (node == target_node) break;
-        vector<pair_entry> edge = wg_ref->adj_weight_list[node];
-        for (auto vw: edge) {
-            if (!visited_nodes[vw.second]) {
-                visited_nodes[vw.second] = true;
+        if (cur_heur > heuristics[node]) continue;
+        vector<pair_entry> adj_vertices = wg_ref->adj_weight_list[node];
+        for (auto vw: adj_vertices) {
+            if (heuristics[vw.second] > heuristics[node] + vw.first) {
+                prev[vw.second] = node;
+                heuristics[vw.second] = heuristics[node] + vw.first;
                 pq.emplace(vw.first, vw.second);
             }
         }
     }
-    cout << endl;
-    cout << "distance: " << path[target_node] << endl;
+    cout << "distance: " << est->distances[target_node] << endl;
 
+    vector<int> path;
+    int point = target_node;
+    while(prev[point] != -1) {
+        path.push_back(point);
+        point = prev[point];
+    }
+    reverse(path.begin(), path.end());
+    cout << "path: ";
+    for (auto v: path) {
+        cout << wg_ref->nodes.find(v)->second << '-';
+    }
+    cout << endl;
 }
 
 void start_inf_searches() {
     weight_graph dijkstra;
     weight_graph astar;
+    estimate estimate;
     dijkstra.distances.resize(NV);
     astar.distances.resize(NV);
+    estimate.distances.resize(NV);
     dijkstra.is_bfs_heuristic = true;
-    fill_weight_graph(&dijkstra);
-    greedy_bfs(&dijkstra);
+    fill_weight_graph(&dijkstra, &estimate);
+    greedy_bfs(&dijkstra, &estimate);
 
-//    fill_weight_graph(&astar);
-//    find_path(&astar);
+    fill_weight_graph(&astar, &estimate);
+    A_star(&astar, &estimate);
 }
 
 void start_base_searches() {
