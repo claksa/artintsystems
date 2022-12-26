@@ -107,6 +107,19 @@ void bfs(struct graph* gr) {
             }
         }
     }
+
+    vector<int> path;
+    int v = target_node;
+    while (v != -1) {
+        path.push_back(v);
+        v = prev[v];
+    }
+    cout << "distance: " << dist[target_node] << endl;
+    cout << "shortest path: " << gr->cities.find(start_node)->second;
+    for (auto i: path) {
+        cout << "-"<< gr->cities.find(i)->second;
+    }
+    cout << endl;
 }
 
 
@@ -142,11 +155,12 @@ void print_dfs(struct graph* gr) {
         vertex = gr->dfs_prev[vertex];
     }
     std::reverse(verts.begin(), verts.end());
+    cout << "distance: " << verts.size() - 1 << endl;
+    cout << "shortest path: ";
     for (int v: verts) {
-        cout << gr->cities.find(v)->second << ' ';
+        cout << "-" << gr->cities.find(v)->second;
     }
     cout << endl;
-    cout << "dist = " << verts.size() - 1 << endl;
 }
 
 void start_dfs(struct graph* gr) {
@@ -197,11 +211,12 @@ void print_BS(const int *s_parent, const int *t_parent, int i_node, struct graph
         path.push_back(v);
         i = v;
     }
+    cout << "distance: " << path.size() - 1 << endl;
+    cout << "shortest path: ";
     for (int v: path) {
-        cout << g->cities.find(v)->second << ' ';
+        cout << "-" << g->cities.find(v)->second;
     }
     cout << endl;
-    cout << "dist = " << path.size() - 1 << endl;
 }
 
 void BS(struct graph* gr) {
@@ -260,11 +275,12 @@ void print_dls(struct graph* g) {
         vertex = g->dls_prev[vertex];
     }
     std::reverse(dls_vertices.begin(), dls_vertices.end());
+    cout << "distance: " << dls_vertices.size() - 1 << endl;
+    cout << "shortest path: ";
     for (int v: dls_vertices) {
-        cout << g->cities.find(v)->second << ' ';
+        cout << "-" << g->cities.find(v)->second;
     }
     cout << endl;
-    cout << "dist = " << dls_vertices.size() - 1 << endl;
 }
 
 void start_dls(struct graph* gr) {
@@ -304,11 +320,12 @@ void print_ids(struct graph* gr) {
         vertex = gr->ids_prev[vertex];
     }
     std::reverse(ids_v.begin(), ids_v.end());
+    cout << "distance: " << ids_v.size() - 1 << endl;
+    cout << "shortest path: ";
     for (int v: ids_v) {
-        cout << gr->cities.find(v)->second << ' ';
+        cout << "-" << gr->cities.find(v)->second;
     }
     cout << endl;
-    cout << "dist = " << ids_v.size() - 1 << endl;
 }
 
 void start_ids (struct graph* gr) {
