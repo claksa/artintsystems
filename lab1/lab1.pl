@@ -75,8 +75,8 @@ parent(elrond, arwen).
 % rules
 in_full_fam(C):- parent(X, C), parent(Y, C), X\=Y.
 have_common_children(P1, P2) :- parent(P1, X), parent(P2, X), P1\=P2.
-sibling(X,Y) :- in_full_fam(X), have_common_children(P1, P2), parent(P1,X), parent(P1,Y), X\=Y, not(parent(P2, X)), not(parent(P2, Y)).
-sibling(X, Y) :- not(in_full_fam(X)), parent(P, X), parent(P, Y), X\=Y.
+sibling(X,Y) :- in_full_fam(X), parent(P2, X), parent(P2, Y), parent(P1,X), parent(P1,Y), P1 \= P2, X\=Y.
+sibling(X,Y) :- not(in_full_fam(X)), parent(P, X), parent(P, Y), X\=Y.
 stepsibling(X, R) :- in_full_fam(X), have_common_children(P1, P2), parent(P1, X), not(parent(P2, X)), parent(P2, R), X \= R.
 % X -- тётя/дядя, R -- племянник
 nephew(X, R) :- parent(Z,R), sibling(X,Z).
@@ -89,11 +89,7 @@ cousin(X, Y):-parent(Z1, X), parent(Z2, Y), sibling(Z1, Z2), Z1 \= Z2, X \= Y.
 % R -- супруг ребёнка, X -- родитель, Y -- ребёнок
 children_in_law(X, Y, R) :- spouse(Y, R), parent(X, Y).
 % R -- сиблинг супруга X
-sibling_in_law(X, R) :- spouse(X, Y), sibling(Y, R).
+sibling_in_law(X, R) :- spouse(X, Y), sibling(Y, R), X\=R.
 % X -- потомок, R -- предок.
 ancestor(X, R) :- parent(R, X).
 ancestor(X, R) :- parent(R, P), ancestor(X, P).
-count_spouses(P, K) :- K = 0, parent(P, C), !, not(in_full_fam(C)).
-ex_spouse(P, P1, K, K1) :-  K is K1 + 1, spouse(P1, P2), !, P2\=P, ex_spouse(P, P1, K, K).
-count_spouses(P, K, K1) :- K is K1 + 1, spouse(P, P1), !, ex_spouse(P, P1, K, K).
-find_spouses(P, K) :- count_spouses(P, K, 0).
