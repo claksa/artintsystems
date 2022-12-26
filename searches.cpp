@@ -333,6 +333,9 @@ void fill_weight_graph(struct weight_graph* wg_ref, struct estimate* est) {
     for (auto [key, value]: vg) {
         wg_ref->nodes[value] = key;
     }
+//    for (auto [key, value]: vg) {
+//        cout << key  << ' ' << value << endl;
+//    }
     wg_ref->adj_weight_list.resize(NV);
     for (auto & edge: edges_weights_list) {
         int begin = vg[edge[0]];
@@ -386,14 +389,15 @@ void greedy_bfs(struct weight_graph* wg_ref, struct estimate* est) {
         point = prev[point];
     }
     reverse(path.begin(), path.end());
-    cout << "path: ";
+    cout << "shortest path: " << wg_ref->nodes.find(start_node)->second;
     for (auto v: path) {
-        cout << wg_ref->nodes.find(v)->second << '-';
+        cout << "-" << wg_ref->nodes.find(v)->second;
     }
     cout << endl;
 }
 
 void A_star(struct weight_graph* wg_ref, struct estimate* est) {
+    cout << "---A*---" << endl;
     vector<int> heuristics(NV, INF);
     vector<int> distances(NV, INF);
     vector<int> prev(NV);
@@ -427,9 +431,9 @@ void A_star(struct weight_graph* wg_ref, struct estimate* est) {
         point = prev[point];
     }
     reverse(path.begin(), path.end());
-    cout << "path: ";
+    cout << "shortest path: " << wg_ref->nodes.find(start_node)->second;
     for (auto v: path) {
-        cout << wg_ref->nodes.find(v)->second << '-';
+        cout << '-' << wg_ref->nodes.find(v)->second;
     }
     cout << endl;
 }
