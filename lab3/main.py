@@ -1,11 +1,7 @@
 import math
 import random
 
-def freq(T, p):
-    return T.count(p)
-
 data = []
-row = []
 with open("DATA.csv", newline='') as file:
     for line in file:
         row = line.split(';')
@@ -15,7 +11,10 @@ with open("DATA.csv", newline='') as file:
         data.append(row)
 
 attr_num = math.sqrt(len(row)+1)
+attr_nums = random.sample(range(len(row)+1), round(attr_num))
+print(attr_nums)
 random_attr = list(range(round(attr_num)))
+print(random_attr)
 random.shuffle(random_attr)
 dataset = [([data[k][j] for j in random_attr], data[k][-1]) for k in range(len(data))]
 
@@ -48,4 +47,3 @@ for m in metrics:
     for v in values:
         freqs.append(v.count(m))
     all_freqs.append(freqs)
-print(all_freqs)
