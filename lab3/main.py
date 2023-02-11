@@ -5,10 +5,75 @@ import numpy as np
 def print_dict(dict):
     for key in dict:
         print(key, '->', dict[key])
+        print()
 
 def freq(T, p):
-    return T.count(p)
+    return list(T).count(p)
 
+# dict_T not transposed
+def info_T(dict_T):
+    size = len(dict_T)
+    s = 0
+    for key in dict_T:
+        p = dict_T[key][1]/size
+        if (p > 0):
+            p *= math.log2(p)
+        s += p
+    return -s
+
+# i -- индекс атрибута
+def info_x(T_i, i, labels_by_grade):
+    s = 0
+    info_x = 0
+    T_size = sum(T_i[1])
+    for j in range(len(T_i[0])):
+        for grade_key in labels_by_grade:
+            cnt = freq(labels_by_grade[grade_key][i], j)/T_i[1][j]
+            if (cnt > 0):
+               cnt *= math.log2(cnt)
+            s += cnt
+        info_x = T_i[1][j]/T_size - s
+    return info_x
+
+def split_info_x(T_i):
+    T_size = sum(T_i[1])
+    s_split = 0
+    for j in range(len(T_i[0])):
+        p = T_i[1][j]/T_size
+        if (p > 0):
+            p *= math.log2(p)
+        s_split += p
+    return -s_split
+
+def find_max_gain_attr(dict_T, dict_attr):
+    info = info_T(dict_T)
+
+    transposed_dict_T = dict_T
+    for key in dict_T:
+        up_dict = {key: 
+                   dict_T[key][0].transpose()
+                   }
+        transposed_dict_T.update(up_dict)
+
+    for key, value in transposed_dict_T.items():
+        new_values = [np.unique(np.array(v), return_counts=True) for v in value]
+        up_dict = {key: new_values} 
+        #transposed_dict_T.update(up_dict)
+
+    print_dict(transposed_dict_T)
+    print()
+    print_dict(dict_attr)
+
+    attr_max_gain = -1
+    max_gain_ratio = -1
+    for i, key_attr in zip(range(attr_amount), dict_attr):
+        infox = info_x(dict_attr[key_attr], i, transposed_dict_T)
+        split_infox = split_info_x(dict_attr[key_attr])
+        gain_ratio = (info-infox)/split_infox
+        if (gain_ratio > max_gain_ratio):
+            max_gain_ratio = gain_ratio
+            attr_max_gain = key_attr
+    return attr_max_gain
 
 data = []
 with open("DATA.csv", newline='') as file:
@@ -22,15 +87,14 @@ attr_amount = round(math.sqrt(len(row)+1))
 attr_nums = random.sample(range(len(row)), attr_amount)
 print('indexes of random attributes: ', attr_nums)
 dataset = [([data[k][j] for j in attr_nums], data[k][-1]) for k in range(len(data))]
-dict_attr = dict(zip(attr_nums, [None]*len(attr_nums)))
 
+dict_attr = dict(zip(attr_nums, [None]*len(attr_nums)))
 attributes = []
 for row in dataset:
     attributes.append(row[0])
 attributes = np.array(attributes).transpose()
 for attr, key in zip(attributes, dict_attr):
     dict_attr[key] = np.unique(attr, return_counts=True)
-print(dict_attr)
 
 grades = set()
 for row in dataset:
@@ -45,42 +109,6 @@ for key in grades:
             attributes.append(row[0])
     dict_T[key] = (np.array(attributes), len(attributes))
 
-
-info_ent = 0
-s = 0
-dataset_size = len(dataset)
-for key in dict_T:
-    freq = dict_T[key][1]
-    p = freq/dataset_size
-    s += p*math.log2(p)
-info_ent = -s
-
-# example dataset
-sample_arr = np.array([
-    [1, 1, 1, 0, 0],
-    [1, 1, 1, 1, 0],
-    [2, 1, 1, 0, 1]
-    ])
-transposed_sample_arr = sample_arr.transpose()
-classes = transposed_sample_arr[-1]
-print(classes)
-transposed_sample_arr = transposed_sample_arr[:-1, :]
-
-
-
-def info_x(labels):
-    s = 0
-    for label in labels:
-        label = np.array(label)
-        label = label.transpose()
-        print(label)
-        #info(label)
-
-labels = []
-for a in transposed_sample_arr:
-    labels.append(
-        [list(a), list(classes)]
-        )
-info_x(labels)
-
+attr_num = find_max_gain_attr(dict_T, dict_attr)
+print(attr_num)
 
