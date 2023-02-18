@@ -57,23 +57,13 @@ def split_info_x(T_i):
 
 def find_max_gain_attr(dict_T, dict_attr):
     info = info_T(dict_T)
-    print('info_T: ', info)
-    print('dict_T:')
-    print_dict(dict_T)
-    print()
-
+ 
     transposed_dict_T = dict_T
     for key in dict_T:
         up_dict = {key: 
                    dict_T[key][0].transpose()
                    }
         transposed_dict_T.update(up_dict)
-
-    print('transposed_dict_T:')
-    print_dict(transposed_dict_T)
-    print()
-    print('dict_attr:')
-    print_dict(dict_attr)
 
     attr_max_gain = -1
     max_gain_ratio = -1
@@ -147,19 +137,17 @@ for l in range(len(labels)):
             indexes[i] = indexes[i] - i
             new_arr = np.delete(new_arr, indexes[i], axis=0)
         ndict_T[key] = (new_arr, len(new_arr))
-    print_dict(ndict_T)
     
     for i, key in enumerate(dict_attr):
         attributes = []
         for k in ndict_T:
-            arr = ndict_T[k][0][0].transpose() # grade --> [attr0, attr1, attr2]
-            # if (i <= len(arr)):
-            attributes.append(np.unique(arr[i], return_counts=True))
-        dict_attr[key] = attributes
-    print_dict(dict_attr)
+            arr = ndict_T[k][0].transpose() # grade --> [attr0, attr1, attr2]
+            attributes.append(arr[i])
+        attrs = list(np.concatenate(attributes).flat)
+        dict_attr[key] = np.unique(attrs, return_counts=True)
     attr_num1, gain_ratio1, attr_ind1 = find_max_gain_attr(ndict_T, dict_attr)
     print(attr_num1)
-    print(gain_ratio1)
+    print("gain ratio: ", gain_ratio1)
     if l == 0:
         break;
     
