@@ -1,0 +1,13 @@
+name: neuralnets
+channels:
+  - defaults
+dependencies:
+  - python=3.10.9
+  - theano
+  - libpython
+  - jupyter
+  - matplotlib
+  - pip:
+    - keras
+    - mingw
+
