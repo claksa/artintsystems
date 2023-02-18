@@ -62,9 +62,15 @@ def find_max_gain_attr(dict_T, dict_attr):
     print_dict(dict_T)
     print()
 
-    transpose_dict(dict_T)
+    transposed_dict_T = dict_T
+    for key in dict_T:
+        up_dict = {key: 
+                   dict_T[key][0].transpose()
+                   }
+        transposed_dict_T.update(up_dict)
+
     print('transposed_dict_T:')
-    print_dict(dict_T)
+    print_dict(transposed_dict_T)
     print()
     print('dict_attr:')
     print_dict(dict_attr)
@@ -73,7 +79,7 @@ def find_max_gain_attr(dict_T, dict_attr):
     max_gain_ratio = -1
     attr_ind = -1
     for i, key_attr in zip(range(attr_amount), dict_attr):
-        infox = info_x(dict_attr[key_attr], i, dict_T)
+        infox = info_x(dict_attr[key_attr], i, transposed_dict_T)
         split_infox = split_info_x(dict_attr[key_attr])
         gain = info - infox
         gain_ratio = gain/split_infox
@@ -119,6 +125,7 @@ for key in grades:
             attributes.append(row[0])
     dict_T[key] = (np.array(attributes), len(attributes))
 
+
 attr_num, gain_ratio, attr_ind = find_max_gain_attr(dict_T, dict_attr)
 print(attr_num)
 print(gain_ratio)
@@ -139,17 +146,20 @@ for l in range(len(labels)):
         for i in range(len(indexes)):
             indexes[i] = indexes[i] - i
             new_arr = np.delete(new_arr, indexes[i], axis=0)
-        ndict_T[key] = new_arr
+        ndict_T[key] = (new_arr, len(new_arr))
     print_dict(ndict_T)
     
     for i, key in enumerate(dict_attr):
         attributes = []
         for k in ndict_T:
-            arr = ndict_T[k].transpose() # grade --> [attr0, attr1, attr2]
+            arr = ndict_T[k][0][0].transpose() # grade --> [attr0, attr1, attr2]
             # if (i <= len(arr)):
             attributes.append(np.unique(arr[i], return_counts=True))
         dict_attr[key] = attributes
     print_dict(dict_attr)
+    attr_num1, gain_ratio1, attr_ind1 = find_max_gain_attr(ndict_T, dict_attr)
+    print(attr_num1)
+    print(gain_ratio1)
     if l == 0:
         break;
     
