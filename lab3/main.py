@@ -90,6 +90,57 @@ def find_max_gain_attr(dict_T, dict_attr):
             attr_ind = i
     return attr_max_gain, max_gain_ratio, attr_ind
 
+def rec_des_tree(dict_T, dict_attr, attr_num, attr_ind):
+    labels = dict_attr.pop(attr_num)[0]
+    pass
+    for l in range(len(labels)):
+        ndict_T = dict_T.copy() # dict_T: grade --> [attr0, attr1, ..., attrN]
+        ndict_attr = dict_attr.copy()
+        leaf_node = -1
+        for key in ndict_T:
+            indexes = []
+            for i, v in enumerate(ndict_T[key][attr_ind]):
+                if (labels[l] == v):
+                    indexes.append(i)
+            if not indexes:
+                leaf_node = key
+                continue
+            new_arr = np.array(ndict_T[key]).transpose()
+            pass
+            rows = []
+            for i in indexes:
+                rows.append(new_arr[i])
+            rows = np.delete(rows, attr_ind, axis=1)
+            ndict_T[key] = (rows, len(rows))
+        if leaf_node >= 0:
+            print("leaf label: ", leaf_node) # add output of class value!
+            ndict_T.pop(leaf_node)
+        print("ndddict:")
+        print_dict(ndict_T)
+        pass
+        for i, key in enumerate(dict_attr):
+            attributes = []
+            for k in ndict_T:
+                arr = ndict_T[k][0].transpose() # grade --> [attr0, attr1,..., attrN]
+                attributes.append(arr[i])
+            attrs = list(np.concatenate(attributes).flat)
+            ndict_attr[key] = np.unique(attrs, return_counts=True)
+        pass
+        attr_num1, gain_ratio1, attr_ind1 = find_max_gain_attr(ndict_T, ndict_attr)
+        print("attribute with the highest gain ratio: ", attr_num1)
+        print("gain ratio: ", gain_ratio1)
+        # labels = dict_attr.pop(attr_num1)[0]
+        print("dict_tttt:")
+        print_dict(dict_T)
+        pass
+        if gain_ratio1 <= 0:
+            if l != (len(labels)-1):
+                continue
+            else:
+                print("blablabla")
+                return
+        else:
+            rec_des_tree(ndict_T, ndict_attr, attr_num1, attr_ind1)
 
 data = []
 with open("DATA.csv", newline='') as file:
@@ -144,37 +195,9 @@ for key in grades:
             attributes.append(row[0])
     dict_T[key] = (np.array(attributes), len(attributes))
 
-
 attr_num, gain_ratio, attr_ind = find_max_gain_attr(dict_T, dict_attr)
 print("attribite with the max gain ratio: ", attr_num)
 print("gain ratio: ", gain_ratio)
+rec_des_tree(dict_T, dict_attr, attr_num, attr_ind)
 
-labels = dict_attr.pop(attr_num)[0]
-
-
-for l in range(len(labels)):
-    ndict_T = dict_T # dict_T: grade --> [attr0, attr1, ..., attrN]
-    for key, key_val in dict_T.items():
-        indexes = []
-        for i, v in enumerate(dict_T[key][attr_ind]):
-            if (labels[l] == v):
-                indexes.append(i)
-        new_arr = np.array(key_val).transpose()
-        rows = []
-        for i in indexes:
-            rows.append(new_arr[i])
-        rows = np.delete(rows, l, axis=1)
-        ndict_T[key] = (rows, len(rows))
-    for i, key in enumerate(dict_attr):
-        attributes = []
-        for k in ndict_T:
-            arr = ndict_T[k][0].transpose() # grade --> [attr0, attr1,..., attrN]
-            attributes.append(arr[i])
-        attrs = list(np.concatenate(attributes).flat)
-        dict_attr[key] = np.unique(attrs, return_counts=True)
-    attr_num1, gain_ratio1, attr_ind1 = find_max_gain_attr(ndict_T, dict_attr)
-    print("attribute with the highest gain ratio: ", attr_num1)
-    print("gain ratio: ", gain_ratio1)
-    if l == 0:
-        break;
     
