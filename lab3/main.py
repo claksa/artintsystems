@@ -2,6 +2,7 @@ import math
 import random
 import numpy as np
 
+
 def print_dict(dict):
     for key in dict:
         print(key, '->', dict[key])
@@ -104,6 +105,7 @@ def rec_des_tree(dict_T, dict_attr, attr_num, attr_ind):
                 rows.append(new_arr[i])
             rows = np.delete(rows, attr_ind, axis=1)
             ndict_T[key] = (rows, len(rows))
+        values = ndict_T.copy()
         pass
         for i, key in enumerate(dict_attr):
             attributes = np.array([])
@@ -116,6 +118,12 @@ def rec_des_tree(dict_T, dict_attr, attr_num, attr_ind):
         attr_num1, gain_ratio, attr_ind1 = find_max_gain_attr(ndict_T, ndict_attr)
         pass
         if gain_ratio <= 0:
+            pass
+            if best_key in values.keys():
+                TP_arr.append(values[best_key][1])
+            for k in bad_keys:
+                if k in values.keys():
+                    TN_arr.append(values[k][1])
             print("leaf: ", labels[l])
             if l != (len(labels)-1):
                 continue
@@ -139,15 +147,25 @@ with open("DATA.csv", newline='') as file:
         row.pop(0)
         data.append(row)
 attr_amount = round(math.sqrt(len(row)+1)) 
+TP = 0
+TN = 0
+TP_arr = []
+TN_arr = []
+ROC_arr = []
+
 #attr_amount = 4
 attr_nums = random.sample(range(len(row)), attr_amount)
 #attr_nums = [0, 1, 2, 3]
+
+best_key = 7
+bad_keys = [0, 1, 2, 3, 4, 5, 6]
+
 print('indexes of random attributes: ', attr_nums)
 dataset = [([data[k][j] for j in attr_nums], data[k][-1]) for k in range(len(data))]
 #dataset = [
 #    ([1, 1, 1, 0], 0),
 #    ([1, 1, 1, 1], 0),
-#    ([2, 1, 1, 0], 1),
+#   ([2, 1, 1, 0], 1),
 #    ([3, 2, 1, 0], 1),
 #    ([3, 3, 0, 0], 1),
 #    ([3, 3, 0, 1], 0),
@@ -184,4 +202,9 @@ for key in grades:
     dict_T[key] = (np.array(attributes), len(attributes))
 
 init_DT(dict_T, dict_attr)
-    
+TP = sum(TP_arr)
+TN = sum(TN_arr)
+
+print("TP: ", TP)
+print("TN: ", TN)
+print("Accuracy: ", (TP+TN)/len(dataset))
