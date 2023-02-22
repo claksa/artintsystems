@@ -205,6 +205,4 @@ init_DT(dict_T, dict_attr)
 TP = sum(TP_arr)
 TN = sum(TN_arr)
 
-print("TP: ", TP)
-print("TN: ", TN)
 print("Accuracy: ", (TP+TN)/len(dataset))
